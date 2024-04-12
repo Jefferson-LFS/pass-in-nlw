@@ -6,7 +6,7 @@ import nlw.unite.passin.api.dto.event.EventRequestDTO;
 import nlw.unite.passin.api.dto.event.EventResponseDTO;
 import nlw.unite.passin.domain.model.attendee.Attendee;
 import nlw.unite.passin.domain.model.event.Event;
-import nlw.unite.passin.domain.repositories.AttendeeRepository;
+import nlw.unite.passin.domain.model.event.exceptions.EventNotFoundException;
 import nlw.unite.passin.domain.repositories.EventRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +17,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventService {
     private final EventRepository eventRepository;
-    private final AttendeeRepository attendeeRepository;
+    private final AttendeeService attendeeService;
 
     public EventResponseDTO getEventDetails(String eventId) {
 
         Event event = this.eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found with ID: " + eventId));
-        List<Attendee> attendeeList = this.attendeeRepository.findByEventId(eventId);
+                .orElseThrow(() -> new EventNotFoundException("Event not found with ID: " + eventId));
+        List<Attendee> attendeeList = this.attendeeService.getAllAttendeesFromEvent(eventId);
         return new EventResponseDTO(event, attendeeList.size());
     }
 
