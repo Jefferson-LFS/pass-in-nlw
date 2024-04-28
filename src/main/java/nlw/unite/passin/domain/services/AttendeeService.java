@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import nlw.unite.passin.api.dto.attendee.AttendeeDetailDTO;
 import nlw.unite.passin.api.dto.attendee.AttendeesListResponseDTO;
 import nlw.unite.passin.domain.model.attendee.Attendee;
+import nlw.unite.passin.domain.model.attendee.exceptions.AttendeeAlreadyExistException;
 import nlw.unite.passin.domain.model.checkin.CheckIn;
 import nlw.unite.passin.domain.repositories.AttendeeRepository;
 import nlw.unite.passin.domain.repositories.CheckInRepository;
@@ -34,5 +35,15 @@ public class AttendeeService {
         }).toList();
 
         return new AttendeesListResponseDTO(attendeeDetailsList);
+    }
+
+    public void verifyAttendeeSubscription(String email, String eventId){
+       Optional<Attendee> isAttendeeRegistered = this.attendeeRepository.findByEventIdAndEmail(eventId, email);
+       if(isAttendeeRegistered.isPresent()) throw new AttendeeAlreadyExistException("Attendee is already registered");
+    }
+
+    public Attendee registerAttendee(Attendee newAttendee) {
+        this.attendeeRepository.save(newAttendee);
+        return newAttendee;
     }
 }
