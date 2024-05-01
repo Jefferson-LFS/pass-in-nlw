@@ -1,14 +1,18 @@
 package nlw.unite.passin.domain.services;
 
 import lombok.RequiredArgsConstructor;
+import nlw.unite.passin.api.dto.attendee.AttendeeBadgeResponseDTO;
 import nlw.unite.passin.api.dto.attendee.AttendeeDetailDTO;
 import nlw.unite.passin.api.dto.attendee.AttendeesListResponseDTO;
+import nlw.unite.passin.api.dto.attendee.AttendeeBadgeDTO;
 import nlw.unite.passin.domain.model.attendee.Attendee;
 import nlw.unite.passin.domain.model.attendee.exceptions.AttendeeAlreadyExistException;
+import nlw.unite.passin.domain.model.attendee.exceptions.AttendeeNotFoundException;
 import nlw.unite.passin.domain.model.checkin.CheckIn;
 import nlw.unite.passin.domain.repositories.AttendeeRepository;
 import nlw.unite.passin.domain.repositories.CheckInRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,5 +49,14 @@ public class AttendeeService {
     public Attendee registerAttendee(Attendee newAttendee) {
         this.attendeeRepository.save(newAttendee);
         return newAttendee;
+    }
+
+    public AttendeeBadgeResponseDTO getAttendeeBadge(String attendeeId, UriComponentsBuilder uriComponentsBuilder) {
+        Attendee attendee = this.attendeeRepository.findById(attendeeId).
+                orElseThrow(() -> new AttendeeNotFoundException("Attendee not found with ID: " + attendeeId));
+        var uri = uriComponentsBuilder.path("/attendees/{attendeeId}/check-in").buildAndExpand(attendeeId).toUri().toString();
+
+        AttendeeBadgeDTO attendeeBadgeDTO = new AttendeeBadgeDTO(attendee.getName(), attendee.getEmail(),uri,attendee.getEvent().getId());
+        return new AttendeeBadgeResponseDTO(attendeeBadgeDTO);
     }
 }
